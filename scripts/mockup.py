@@ -5,11 +5,12 @@
 
 The screens are found automatically as the two large near-black rectangles in
 the device image (one in each half). The result is SCALE times the size of the
-device image (default 2) so the terminal text stays readable. Needs Pillow.
+device image (default 2) so the terminal text stays readable, and the white
+background around the device is made transparent. Needs Pillow.
 """
 import sys
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter
 
 
 def is_screen(p, dark=36, tint=14):
@@ -45,6 +46,43 @@ def find_screen(img, y0, y1, min_width=0.2):
     return x0, top, x1, bottom
 
 
+def transparent_background(img, white=235, edge=3):
+    """Makes the white background around the device transparent.
+
+    Only white connected to the image border counts as background, so white
+    details on the device itself stay opaque. Pixels along the outline are
+    blended with white, so they get partial alpha with the white taken back out
+    (like GIMP's colour-to-alpha), which avoids a light fringe on dark pages.
+    """
+    img = img.convert('RGB')
+    w, h = img.size
+    near_white = img.convert('L').point(lambda v: 255 if v >= white else 0)
+    near_white.paste(255, (0, 0, w, 1))  # border rows/columns seed the fill
+    near_white.paste(255, (0, h - 1, w, h))
+    near_white.paste(255, (0, 0, 1, h))
+    near_white.paste(255, (w - 1, 0, w, h))
+    ImageDraw.floodfill(near_white, (0, 0), 128, thresh=0)
+    background = near_white.point(lambda v: 255 if v == 128 else 0)
+    outline = background.filter(ImageFilter.MaxFilter(2 * edge + 1))
+
+    out = img.convert('RGBA')
+    px, bg, ol = out.load(), background.load(), outline.load()
+    for y in range(h):
+        for x in range(w):
+            if bg[x, y]:
+                px[x, y] = (255, 255, 255, 0)
+            elif ol[x, y]:
+                r, g, b, _ = px[x, y]
+                a = max(255 - r, 255 - g, 255 - b)
+                if a == 0:
+                    px[x, y] = (255, 255, 255, 0)
+                elif a < 255:
+                    k = 255 / a
+                    px[x, y] = tuple(min(255, max(0, round(255 - (255 - c) * k)))
+                                     for c in (r, g, b)) + (a,)
+    return out
+
+
 def main():
     device_path, top_path, bottom_path, out_path = sys.argv[1:5]
     scale = int(sys.argv[5]) if len(sys.argv) > 5 else 2
@@ -64,7 +102,7 @@ def main():
     x0, y0, x1, y1 = mask.getbbox()
     m = 12 * scale
     out = out.crop((max(0, x0 - m), max(0, y0 - m), min(out.width, x1 + m), min(out.height, y1 + m)))
-    out.save(out_path, optimize=True)
+    transparent_background(out).save(out_path, optimize=True)
 
 
 if __name__ == '__main__':
