@@ -1,0 +1,7 @@
+# Build environment for the native Terminal app. Debian 12's glibc (2.36) is older
+# than the device's (2.41), so binaries built here run on the device.
+FROM docker.io/library/debian:bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential pkg-config libsdl2-dev libsdl2-ttf-dev libsdl2-gfx-dev \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /src

@@ -1,0 +1,7 @@
+# Shell startup for the Terminal app: system profile, a coloured prompt, then ~/.bashrc.
+[ -f /etc/profile ] && . /etc/profile
+PS1='\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ '
+alias ls='ls --color=auto'
+HISTFILE=~/.bash_history
+HISTSIZE=2000
+[ -f ~/.bashrc ] && . ~/.bashrc

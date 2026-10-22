@@ -1,0 +1,11 @@
+# Build output
+/build/obj/
+/app/terminal/dsterm
+/dist/
+
+# Files the app writes on the device
+/app/terminal/settings.conf
+/app/terminal/log.txt
+
+# macOS
+.DS_Store
