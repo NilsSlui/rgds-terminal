@@ -186,6 +186,7 @@ third_party/          libvterm 0.3.3, compiled into the app
 build/Containerfile   Build environment
 scripts/              Build, deploy, package, screenshot, mockup and colour-test scripts
 docs/                 The README image and the device picture used to make it
+LICENSE               MIT licence
 ```
 
 ## Credits
@@ -195,3 +196,9 @@ docs/                 The README image and the device picture used to make it
 - The `xterm-256color` terminal definition comes from the ncurses terminfo database.
 - Text uses the DejaVu and Source Han Sans fonts that ship with the device's
   firmware. They are not included in this repository.
+
+## Licence
+
+rgds-terminal is released under the [MIT licence](LICENSE). The release zip
+includes this licence and libvterm's in `terminal/LICENSE` and
+`terminal/THIRD_PARTY_LICENSES.txt`.
